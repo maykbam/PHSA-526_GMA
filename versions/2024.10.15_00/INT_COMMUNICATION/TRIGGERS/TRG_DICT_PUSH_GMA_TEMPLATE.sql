@@ -1,0 +1,25 @@
+--liquibase formatted.sql
+--changeset michael.cawayan:INT_COMMUNICATION.TRG_DICT_PUSH_GMA_TEMPLATE contextFilter:PH endDelimiter:/ runOnChange:true
+
+create or replace TRIGGER INT_COMMUNICATION.TRG_DICT_PUSH_GMA_TEMPLATE
+BEFORE INSERT OR UPDATE ON INT_COMMUNICATION.DICT_PUSH_TEMPLATE
+FOR EACH ROW
+DECLARE
+   rowcnt number;
+   logic_app varchar2(128 char);
+BEGIN
+   SELECT COUNT(*) 
+   INTO rowcnt 
+   FROM INT_COMMUNICATION.DICT_PUSH_GMA_TEMPLATE 
+   WHERE TPL_ID = :new.TPL_ID 
+   AND TPL_LANGUAGE = :new.TPL_LANGUAGE;
+   IF rowcnt > 0  THEN
+        SELECT LOGICAL_APPLICATION 
+        INTO logic_app 
+        FROM INT_COMMUNICATION.DICT_PUSH_GMA_TEMPLATE 
+        WHERE TPL_ID = :new.TPL_ID 
+        AND TPL_LANGUAGE = :new.TPL_LANGUAGE;
+       :new.LOGICAL_APPLICATION := logic_app;
+   END IF;
+END;
+/
